@@ -35,7 +35,7 @@ public class Util {
 	public static final int WAIT_TIME = 30; 
 	// Valid account for login
 	public static final String USER_NAME = "mngr275032";
-	public static final String PASSWD = "gEdajAd";
+	public static final String PASSWD = "test123!";
 	// Expected output
 	public static final String EXPECT_TITLE = "Guru99 Bank Manager HomePage";
 	//Expected allert error

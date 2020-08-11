@@ -15,6 +15,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -33,14 +34,24 @@ import org.testng.annotations.Test;
 
 import freemarker.template.SimpleDate;
 import pageObjects.HomePage;
+import pageObjects.ManagerHomePage;
 
-public class TestScript03 {
+public class ChangePwdAndLogin {
 
+	
 	public WebDriver driver;
+
 	private static String baseUrl;
 	static By locatedElement = By.className("menusubnav");
 	static By homePage = By.name("frmLogin");
-	
+	String oldPwd = "test123456";
+	String newPwd = "t123456!";
+	String incorrectNewPwd = "123456";
+	String specialCharMessage = "Enter at-least one special character";
+	String uname = Util.USER_NAME;
+	String password = Util.PASSWD;
+	String allFieldsMessage = "Please fill all fields";
+
 	
 	@DataProvider(name="GuruTest")
 	public Object[][] testData() {
@@ -72,23 +83,71 @@ public class TestScript03 {
 		driver.get(baseUrl + "/V4/");
 	}
 	
-	@BeforeMethod(enabled=false)
+	@BeforeMethod(enabled=true)
 	public void launchBrowser() {
 		driver.get(baseUrl + "/V4/");
 	}
 
-	@AfterTest(enabled=false)
+	@AfterTest(enabled=true)
 	public void tearDown() {
 		driver.quit();
 	}
 	
-	@Test
-	public void loginTest() throws InterruptedException {
+	@AfterMethod(enabled=false)
+		public void closeBrowser() {
+			driver.close();
+		}
+	
+	@Test(enabled=true)
+	public void incorrectOldPassword() throws InterruptedException {
 		HomePage hp = new HomePage(driver);
+		ManagerHomePage mp = new ManagerHomePage(driver);
+		String expectedMessage = "Old Password is incorrect";
 
-		hp.signIn();
+		hp.signIn(uname, password);				
+		mp.changePassword(oldPwd, newPwd, newPwd);
 		
-		System.out.println("First Test probe");
+		Alert alt = driver.switchTo().alert();
+		String message = alt.getText();
+		Assert.assertEquals(message, expectedMessage);
+		alt.dismiss();
+		
+	}
+	
+	@Test(enabled=true)
+	public void incorrectNewPassword() {
+		HomePage hp = new HomePage(driver);
+		ManagerHomePage mp = new ManagerHomePage(driver);
+//		String expectedMessage = "Please fill all fields";
+
+		hp.signIn(uname, password);				
+		mp.changePassword(oldPwd, incorrectNewPwd, incorrectNewPwd);
+		
+		Alert alt = driver.switchTo().alert();
+		String message = alt.getText();
+		Assert.assertEquals(message, allFieldsMessage);
+		alt.dismiss();
+		
+		String spCharText = driver.findElement(By.id("message21")).getText();
+		Assert.assertEquals(spCharText, specialCharMessage);
+	
+	}
+	
+	@Test(enabled=true)
+	public void confirmPasswordUnmatched() {
+		HomePage hp = new HomePage(driver);
+		ManagerHomePage mp = new ManagerHomePage(driver);
+		String expectedMessage = "Passwords do not Match";
+		
+		hp.signIn(uname, password);
+		mp.changePassword(oldPwd, newPwd, incorrectNewPwd);
+		
+		Alert alt = driver.switchTo().alert();
+		String message = alt.getText();
+		Assert.assertEquals(message, allFieldsMessage);
+		alt.dismiss();
+		String pwdNotMatched = driver.findElement(By.id("message22")).getText();
+		Assert.assertEquals(pwdNotMatched, expectedMessage);
 		
 	}
 }
